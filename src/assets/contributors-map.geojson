@@ -195,6 +195,21 @@
           49.67997
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "firstName": "Yan",
+        "githubId": "yryap",
+        "favoriteCrag": "75437da6-74af-53b8-8a96-e6633f515859" 
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.88538,
+          42.49094
+        ]
+      }
     }
   ]
 }
