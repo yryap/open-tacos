@@ -1,9 +1,11 @@
 import slugify from 'slugify'
-
-import { ClimbTypeToColor } from './constants'
+import { notFound } from 'next/navigation'
+import { validate } from 'uuid'
 import { formatDistanceToNowStrict, differenceInYears, format } from 'date-fns'
 
+import { ClimbTypeToColor } from './constants'
 import { AreaType, ClimbType, ClimbDisciplineRecord, ClimbDiscipline, MediaWithTags, MediaConnection, AreaMetadataType } from './types'
+import { PageWithCatchAllUuidProps } from './types/pages'
 
 /**
  * Given a path or parent id and the type of the page generate the GitHub URL
@@ -214,7 +216,7 @@ export const urlResolver = (type: number, dest: string | null, name: string): st
   if (dest == null) return null
   switch (type) {
     case 0:
-      return `/climbs/${dest}`
+      return `/climb/${dest}`
     case 1:
       return getAreaPageFriendlyUrl(dest, name)
     case 3:
@@ -272,11 +274,19 @@ export const getFriendlySlug = (name: string): string => slugify(name, { lower: 
 
 /**
  * Return the area page url with a trailing friendly area name
- * @param uuid area uuid
+ * @param uuid page id
  * @param areaName area name
  * @returns `/area/<area uuid>/<slugified area name>`
  */
 export const getAreaPageFriendlyUrl = (uuid: string, areaName: string): string => `/area/${uuid}/${getFriendlySlug(areaName)}`
+
+/**
+ * Return the climb page url with a trailing friendly name
+ * @param uuid page id
+ * @param climbName climb name
+ * @returns `/area/<area uuid>/<slugified area name>`
+ */
+export const getClimbPageFriendlyUrl = (uuid: string, climbName: string): string => `/climb/${uuid}/${getFriendlySlug(climbName)}`
 
 /**
  * Bust area page cache
@@ -316,4 +326,19 @@ export const areaLeftRightIndexComparator = (a: SortableAreaType, b: SortableAre
   if (aIndex < bIndex) return -1
   else if (aIndex > bIndex) return 1
   return 0
+}
+/**
+ * Extract and validate uuid as the first param in a catch-all route
+ */
+export const parseUuidAsFirstParam = ({ params }: PageWithCatchAllUuidProps): string => {
+  if (params.slug == null || params.slug?.length === 0) {
+    notFound()
+  }
+
+  const uuid = params.slug[0]
+  if (!validate(uuid)) {
+    console.error('Invalid uuid', uuid)
+    notFound()
+  }
+  return uuid
 }

@@ -6,11 +6,11 @@ import { getFriendlySlug } from '@/js/utils'
 import { ControlledTooltip } from '@/components/ui/Tooltip'
 
 /**
- * Copy area link to clipboard button
+ * Copy area/climb URL to clipboard button
  */
-export const ShareAreaLinkButton: React.FC<{ uuid: string, areaName: string }> = ({ uuid, areaName }) => {
-  const slug = getFriendlySlug(areaName)
-  const url = `https://openbeta.io/area/${uuid}/${slug}`
+export const SharePageURLButton: React.FC<{ path: string, name: string }> = ({ path, name }) => {
+  const slug = getFriendlySlug(name)
+  const url = `https://openbeta.io/${path}/${slug}`
 
   const [clicked, setClicked] = useState(false)
 
@@ -25,7 +25,7 @@ export const ShareAreaLinkButton: React.FC<{ uuid: string, areaName: string }> =
   return (
     <ControlledTooltip content={<div className='flex items-center'>Copied <Check size={16} /></div>} open={clicked}>
       <button
-        className='btn' onClick={() => {
+        className='btn no-animation' onClick={() => {
           void navigator.clipboard.writeText(url)
           setClicked(true)
         }}

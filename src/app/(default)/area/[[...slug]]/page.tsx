@@ -1,7 +1,6 @@
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
-import { validate } from 'uuid'
 import { MapPinLine, Lightbulb, ArrowRight } from '@phosphor-icons/react/dist/ssr'
 import Markdown from 'react-markdown'
 
@@ -10,27 +9,21 @@ import { getArea } from '@/js/graphql/getArea'
 import { StickyHeaderContainer } from '@/app/(default)/components/ui/StickyHeaderContainer'
 import { AreaCrumbs } from '@/components/breadcrumbs/AreaCrumbs'
 import { ArticleLastUpdate } from '@/components/edit/ArticleLastUpdate'
-import { getMapHref, getFriendlySlug, getAreaPageFriendlyUrl, sanitizeName } from '@/js/utils'
+import { getMapHref, getFriendlySlug, getAreaPageFriendlyUrl, sanitizeName, parseUuidAsFirstParam } from '@/js/utils'
 import { LazyAreaMap } from '@/components/maps/AreaMap'
-import { AreaPageContainer } from '@/app/(default)/components/ui/AreaPageContainer'
-import { AreaPageActions } from '../../components/AreaPageActions'
+import { DefaultPageContainer } from '@/app/(default)/components/ui/DefaultPageContainer'
+import { AreaAndClimbPageActions } from '../../components/AreaAndClimbPageActions'
 import { SubAreasSection } from './sections/SubAreasSection'
 import { ClimbListSection } from './sections/ClimbListSection'
 import { CLIENT_CONFIG } from '@/js/configs/clientConfig'
 import { PageBanner as LCOBanner } from '@/components/lco/PageBanner'
-import { AuthorMetadata, OrganizationType } from '@/js/types'
+import { AuthorMetadata, OrganizationType, TagTargetType } from '@/js/types'
+import { PageWithCatchAllUuidProps, PageSlugType } from '@/js/types/pages'
 /**
  * Page cache settings
  */
 export const revalidate = 300 // 5 mins
 export const fetchCache = 'force-no-store' // opt out of Nextjs version of 'fetch'
-
-interface PageSlugType {
-  slug: string []
-}
-export interface PageWithCatchAllUuidProps {
-  params: PageSlugType
-}
 
 /**
  * Area/crag page
@@ -58,13 +51,13 @@ export default async function Page ({ params }: PageWithCatchAllUuidProps): Prom
   }
 
   return (
-    <AreaPageContainer
+    <DefaultPageContainer
       photoGallery={
         photoList.length === 0
           ? <UploadPhotoCTA />
           : <PhotoMontage photoList={photoList} />
       }
-      pageActions={<AreaPageActions areaName={areaName} uuid={uuid} />}
+      pageActions={<AreaAndClimbPageActions name={areaName} uuid={uuid} targetType={TagTargetType.area} />}
       breadcrumbs={
         <StickyHeaderContainer>
           <AreaCrumbs pathTokens={pathTokens} ancestors={ancestors} />
@@ -92,24 +85,8 @@ export default async function Page ({ params }: PageWithCatchAllUuidProps): Prom
         <SubAreasSection area={area} />
         <ClimbListSection area={area} />
       </div>
-    </AreaPageContainer>
+    </DefaultPageContainer>
   )
-}
-
-/**
- * Extract and validate uuid as the first param in a catch-all route
- */
-const parseUuidAsFirstParam = ({ params }: PageWithCatchAllUuidProps): string => {
-  if (params.slug == null || params.slug?.length === 0) {
-    notFound()
-  }
-
-  const uuid = params.slug[0]
-  if (!validate(uuid)) {
-    console.error('Invalid uuid', uuid)
-    notFound()
-  }
-  return uuid
 }
 
 const EditDescriptionCTA: React.FC<{ uuid: string }> = ({ uuid }) => (
